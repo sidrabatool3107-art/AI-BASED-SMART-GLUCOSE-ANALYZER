@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AI-Based Glucose Pattern Analyzer</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{font-family:Arial;background:#eef2f7;text-align:center;}
+.container{background:white;padding:25px;margin:30px auto;width:520px;border-radius:15px;box-shadow:0 0 12px gray;}
+h1{color:#2b7cff;}
+input,select{padding:8px;margin:6px;width:80%;font-size:16px;}
+button{padding:10px 20px;font-size:18px;background:#2b7cff;color:white;border:none;border-radius:10px;cursor:pointer;margin:5px;}
+.result{font-size:18px;margin-top:15px;font-weight:bold;}
+canvas{margin-top:20px;}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h1>AI-Based Glucose Pattern Analyzer</h1>
+
+<h3>🍽 Food Intake</h3>
+<select id="food">
+<option value="200">Rice (200 cal)</option>
+<option value="180">Roti (180 cal)</option>
+<option value="250">Biryani (250 cal)</option>
+<option value="300">Burger (300 cal)</option>
+<option value="120">Milk (120 cal)</option>
+<option value="180">Soft Drink (180 cal)</option>
+<option value="150">Fruit (150 cal)</option>
+<option value="80">Vegetables (80 cal)</option>
+<option value="250">Chocolate (250 cal)</option>
+<option value="220">Ice Cream (220 cal)</option>
+<option value="280">Chicken Curry (280 cal)</option>
+</select>
+
+<input id="qty" type="number" placeholder="Servings">
+<button onclick="addFood()">Add Food</button>
+<p>Total Calories: <span id="calories">0</span></p>
+
+<hr>
+
+<h3>👤 Personal Info</h3>
+<input id="age" type="number" placeholder="Age">
+<input id="height" type="number" placeholder="Height (cm)">
+<input id="weight" type="number" placeholder="Weight (kg)">
+
+<h3>❤️ Body Signals</h3>
+<input id="hr" type="number" placeholder="Heart Rate (bpm)">
+<input id="temp" type="number" placeholder="Temperature °C">
+
+<select id="activity">
+<option>Low Activity</option>
+<option>Moderate Activity</option>
+<option>High Activity</option>
+</select>
+
+<br><br>
+<button onclick="analyze()">Analyze</button>
+<button onclick="resetDay()">Reset Day</button>
+
+<div class="result" id="output"></div>
+<canvas id="chart"></canvas>
+</div>
+
+<script>
+let totalCalories=0;
+let glucoseHistory=[];
+
+function addFood(){
+ let cal=parseInt(document.getElementById("food").value);
+ let qty=parseInt(document.getElementById("qty").value);
+ if(isNaN(qty)||qty<=0){alert("Enter servings");return;}
+ totalCalories+=cal*qty;
+ document.getElementById("calories").innerHTML=totalCalories;
+}
+
+const ctx=document.getElementById('chart');
+const chart=new Chart(ctx,{type:'line',data:{labels:[],datasets:[{label:'Glucose Trend',data:[],borderWidth:3}]}});
+
+function analyze(){
+
+let age=document.getElementById("age").value;
+let height=document.getElementById("height").value/100;
+let weight=document.getElementById("weight").value;
+let hr=document.getElementById("hr").value;
+let temp=document.getElementById("temp").value;
+let activity=document.getElementById("activity").value;
+
+let bmi=(weight/(height*height)).toFixed(1);
+let glucose=Math.floor(totalCalories/2);
+
+let risk=0;
+let reason="Healthy metabolic pattern";
+let advice="Maintain healthy lifestyle";
+let status="✓ NORMAL";
+
+if(glucose>140){risk+=25;}
+if(hr>95){risk+=20; reason="Stress detected"; advice="Practice relaxation";}
+if(activity=="Low Activity"){risk+=20; reason="Low activity"; advice="Increase exercise";}
+if(temp>37){risk+=20; reason="Possible infection"; advice="Monitor temperature";}
+if(age>45){risk+=10;}
+if(bmi>25){risk+=15; reason="Obesity related risk"; advice="Weight management recommended";}
+
+if(risk>50) status="⚠ HIGH RISK";
+else if(risk>25) status="⚠ MODERATE RISK";
+
+document.getElementById("output").innerHTML=
+"<b>BMI:</b> "+bmi+"<br>"+
+"<b>Estimated Glucose:</b> "+glucose+" mg/dL<br>"+
+"<b>Risk Score:</b> "+risk+"%<br>"+
+"<b>Status:</b> "+status+"<br>"+
+"<b>Likely Cause:</b> "+reason+"<br>"+
+"<b>Recommendation:</b> "+advice;
+
+glucoseHistory.push(glucose);
+chart.data.labels.push("Entry "+glucoseHistory.length);
+chart.data.datasets[0].data=glucoseHistory;
+chart.update();
+}
+
+function resetDay(){
+totalCalories=0;
+document.getElementById("calories").innerHTML=0;
+document.getElementById("output").innerHTML="";
+}
+</script>
+
+</body>
+</html>
